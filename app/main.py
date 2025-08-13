@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 from fastapi import FastAPI, Response, status, HTTPException, Depends
 from fastapi.params import Body
 from random import randrange
@@ -50,20 +50,20 @@ def find_index_id(id):
 def root():
     return {"message" :"Hello World go go "}
 
-@app.get("/posts")
-def get_post(db: Session = Depends(get_db)):
+@app.get("/posts", response_model= List[schema.PostResponse])
+def get_posts(db: Session = Depends(get_db)):
     
         # cursor.execute("""SELECT * FROM posts """)  # lowercase if created normally, for uppercase in table name use double quotes 
         # posts = cursor.fetchall()
         posts = db.query(model.Post).all()
-        return {"data": posts}
+        return posts
     
     # except Exception as e:
     #     conn.rollback()  # clears aborted transaction
     #     raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/posts", status_code= status.HTTP_201_CREATED)
+@app.post("/posts", status_code= status.HTTP_201_CREATED, response_model=schema.PostResponse)
 # body is from fastapi lib: it extracts and converts data in dict and stores in payload var(always structure routes)
 def create_posts(new_post: schema.PostCreate, db: Session = Depends(get_db)):
     # cursor.execute(""" INSERT INTO posts (title, content, published) VALUES (%s, %s, %s) RETURNING * """, (new_post.title, new_post.content, new_post.published))
@@ -73,18 +73,20 @@ def create_posts(new_post: schema.PostCreate, db: Session = Depends(get_db)):
     db.add(saved_post)
     db.commit()
     db.refresh(saved_post)
-    return{"data": saved_post}
+    return  saved_post
 
 
 
 # fastapi code runs from top to bottom and if we but the one with id above tha latest route it will throw error.
-@app.get("/posts/latest")
-def get_latest_post():
-    post = my_posts[len(my_posts)-1]
-    return {"detail": post}
+@app.get("/posts/latest", response_model=schema.PostResponse)
+def get_latest_post(db: Session = Depends(get_db)):
+    latest_post = db.query(model.Post).order_by(model.Post.id.desc()).first()
+    if not latest_post:
+        raise HTTPException(status_code=404, detail="No posts found")
+    return latest_post
 
 
-@app.get("/posts/{id}")
+@app.get("/posts/{id}", response_model=schema.PostResponse)
 def get_post(id: int, response: Response, db: Session = Depends(get_db)):
     # path param is returned as string so we typecaste/changed into int: but in fastapi we set id: int and its done
     # cursor.execute(""" SELECT * FROM posts WHERE id = %s """, (str(id)))
@@ -98,7 +100,7 @@ def get_post(id: int, response: Response, db: Session = Depends(get_db)):
         # other way (hard way to throw error)
         # response.status_code= status.HTTP_404_NOT_FOUND
         # return {"message": f"post with id: {id} was not found"}
-    return{"post_detail": save}
+    return save
 
 
 @app.delete("/posts/{id}", status_code= status.HTTP_204_NO_CONTENT)
@@ -118,7 +120,7 @@ def delete_post(id: int, db: Session = Depends(get_db)):
     
 
 
-@app.put("/posts/{id}", )
+@app.put("/posts/{id}", response_model= schema.PostResponse )
 def update_post(id: int, new_post: schema.PostCreate, db: Session = Depends(get_db)):
      
     # cursor.execute("""UPDATE posts SET title = %s, content = %s, published = %s WHERE id = %s RETURNING *""", (
@@ -142,4 +144,4 @@ def update_post(id: int, new_post: schema.PostCreate, db: Session = Depends(get_
 # def test_posts(db: Session = Depends(get_db)):
 
 #     posts = db.query(model.Post).all()
-#     return{"data": posts}
+#     return{"data": posts} 

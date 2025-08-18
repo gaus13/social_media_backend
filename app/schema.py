@@ -14,6 +14,7 @@ class PostCreate(PostBase):  #inheriting postbase model
 class PostResponse(PostBase):  #yahan jo likhoge wahi response mein milega
     id: int 
     created_at:datetime 
+    owner_id: int
     #  it tells Pydantic to work with ORM objects directly — not just plain Python dicts.
     class Config:
         orm_mode= True
@@ -28,7 +29,7 @@ class UserOut(BaseModel):
       id: int
       email: EmailStr
       class Config:
-        orm_mode= True
+        from_attributes = True
 
 class UserLogin(BaseModel):
      email: EmailStr
@@ -40,4 +41,4 @@ class Token(BaseModel):
 
 
 class TokenData(BaseModel):
-     id: Optional[str] = None
+     id: Optional[int] = None  #str to int correction was made here

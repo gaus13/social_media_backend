@@ -2,7 +2,7 @@ from fastapi import FastAPI, Response, status, HTTPException, Depends, APIRouter
 from sqlalchemy.orm import Session
 from .. import model, schema, oauth2
 from ..database import get_db
-from typing import List
+from typing import List, Optional
 
 router = APIRouter(
     prefix="/posts", #reduces repetition of writing post in endpoint url
@@ -10,11 +10,12 @@ router = APIRouter(
 )
 
 @router.get("/", response_model= List[schema.PostResponse])
-def get_posts(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
+def get_posts(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user),
+               limit: int = 10, skip: int = 0, search: Optional[str]= ""):  #if you want to add space in qparam add %20
     
         # cursor.execute("""SELECT * FROM posts """)  # lowercase if created normally, for uppercase in table name use double quotes 
         # posts = cursor.fetchall()
-        posts = db.query(model.Post).all()
+        posts = db.query(model.Post).filter(model.Post.title.contains(search)).limit(limit).offset(skip).all()
         return posts
     
     # except Exception as e:

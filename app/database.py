@@ -21,3 +21,21 @@ def get_db():
 
 
 Base = declarative_base()
+
+
+
+#we are not using the below we're using alchemy for this
+# while True:
+
+#   try:
+#     # hardcoding DB info here is a big problem 
+#     conn = psycopg2.connect(host= 'localhost', database = 'fastapi data',
+#                              user = 'postgres', password = 'Gulam@***', cursor_factory= RealDictCursor)
+#     cursor = conn.cursor()
+#     print("Database connection was successful")
+#     break  # exits from the infinite loop 
+
+#   except Exception as error:
+#     print("connection to Database failed")
+#     print("Error: ", error)
+#     time.sleep(3)

@@ -1,6 +1,7 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, conint
 from datetime import datetime
 from typing import Optional
+from enum import Enum
 
 class PostBase(BaseModel):
     title: str
@@ -45,3 +46,13 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
      id: Optional[int] = None  #str to int correction was made here
+
+
+# validation for likes
+class VoteDirection(int, Enum):
+    unlike = 0   # remove like / dislike
+    like = 1     # add like
+
+class Vote(BaseModel):
+    post_id: int
+    direction: VoteDirection

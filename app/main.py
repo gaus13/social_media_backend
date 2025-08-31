@@ -3,10 +3,23 @@ from . import model
 from .database import engine
 from .routers import posts, user, auth, vote
 from .config import setting
+from fastapi.middleware.cors import CORSMiddleware
 
+# when using alembic we dont need below code - 
 model.Base.metadata.create_all(bind = engine)
 
 app = FastAPI()
+
+# origins tell who can access or send request to the app
+origins = ['*']
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(posts.router)
 app.include_router(user.router)

@@ -15,8 +15,10 @@ class PostCreate(PostBase):  #inheriting postbase model
 class UserOut(BaseModel):
       id: int
       email: EmailStr
+
       class Config:
         from_attributes = True
+
 
 
 # Response model
@@ -29,6 +31,9 @@ class PostResponse(PostBase):  #yahan jo likhoge wahi response mein milega
     class Config:
         orm_mode= True
 
+class PostOutVote(BaseModel):
+     Post: PostResponse
+     votes: int
 
 class UserCreate(BaseModel):
             email: EmailStr   #this Emailstr import checks if the input email is valid

@@ -1,5 +1,7 @@
 from fastapi import FastAPI, Response, status, HTTPException, Depends, APIRouter
 from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session
+from sqlalchemy import func
 from .. import model, schema, oauth2
 from ..database import get_db
 from typing import List, Optional
@@ -9,15 +11,18 @@ router = APIRouter(
     tags=['Posts']
 )
 
-@router.get("/", response_model= List[schema.PostResponse])
+@router.get("/", response_model= List[schema.PostOutVote])
 def get_posts(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user),
                limit: int = 10, skip: int = 0, search: Optional[str]= ""):  #if you want to add space in qparam add %20
     
         # cursor.execute("""SELECT * FROM posts """)  # lowercase if created normally, for uppercase in table name use double quotes 
         # posts = cursor.fetchall()
-        posts = db.query(model.Post).filter(model.Post.title.contains(search)).limit(limit).offset(skip).all()
-        return posts
-    
+        # posts = db.query(model.Post).filter(model.Post.title.contains(search)).limit(limit).offset(skip).all()  #this was before we added votes feature
+
+       posts = db.query(model.Post, func.count(model.Vote.post_id).label("votes")).join(
+            model.Vote, model.Vote.post_id == model.Post.id, isouter = True).group_by(model.Post.id).filter(model.Post.title.contains(search)).limit(limit).offset(skip).all()
+       return posts
+
     # except Exception as e:
     #     conn.rollback()  # clears aborted transaction
     #     raise HTTPException(status_code=500, detail=str(e))
@@ -46,15 +51,18 @@ def get_latest_post(db: Session = Depends(get_db), current_user: int = Depends(o
     return latest_post
 
 
-@router.get("/{id}", response_model=schema.PostResponse)
+@router.get("/{id}", response_model=schema.PostOutVote)
 def get_post(id: int, response: Response, db: Session = Depends(get_db),current_user: int = Depends(oauth2.get_current_user)):
     # path param is returned as string so we typecaste/changed into int: but in fastapi we set id: int and its done
     # cursor.execute(""" SELECT * FROM posts WHERE id = %s """, (str(id)))
     # save = cursor.fetchone()
-    save = db.query(model.Post).filter(model.Post.id == id).first()
-    print(save)
-    # new_post = find_post(id)
+    # save = db.query(model.Post).filter(model.Post.id == id).first()
+    
+    save = db.query(model.Post, func.count(model.Vote.post_id).label("votes")).join(
+            model.Vote, model.Vote.post_id == model.Post.id, isouter = True).group_by(model.Post.id).filter(model.Post.id == id).first()
 
+
+    # new_post = find_post(id)
     if not save:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"post with id: {id} was not found")
         # other way (hard way to throw error)

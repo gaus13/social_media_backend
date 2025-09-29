@@ -1,12 +1,11 @@
-name: Build and Deploy Code
+name: Simple Setup Check
 
 on: [push, pull_request]
 
 jobs:
-  build:
-    environment:
-      name: testing
+  setup-check:
     runs-on: ubuntu-latest
+          
     steps: 
       - name: pulling git repo
         uses: actions/checkout@v4
@@ -16,26 +15,23 @@ jobs:
         with:
           python-version: "3.12"
           
-      - name: Update pip
-        run: python -m pip install --upgrade pip
+      - name: Say hello to Danish
+        run: echo "Hello Danish! Your GitHub Actions workflow is working perfectly! 🎉"
         
-      - name: Install all dependencies
-        run: pip install -r requirements.txt
+      - name: Show Python version
+        run: python --version
         
-      - name: Test with pytest
+      - name: Check if requirements.txt exists
         run: |
-          pip install pytest
-          pytest
-
-  deploy:
-    runs-on: ubuntu-latest
-    needs: [build]
-    environment:
-      name: production
-      
-    steps:
-      - name: pulling git repo
-        uses: actions/checkout@v4
-        
-      - name: say hi to danish
-        run: echo "hello danish - deploying to production!"  
+          if [ -f requirements.txt ]; then
+            echo "✅ requirements.txt found!"
+            echo "📋 Contents:"
+            cat requirements.txt
+          else
+            echo "❌ requirements.txt not found"
+          fi
+          
+      - name: Show project structure
+        run: |
+          echo "📁 Project structure:"
+          ls -la  

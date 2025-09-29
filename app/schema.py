@@ -29,7 +29,7 @@ class PostResponse(PostBase):  #yahan jo likhoge wahi response mein milega
     owner: UserOut
     #  it tells Pydantic to work with ORM objects directly — not just plain Python dicts.
     class Config:
-        orm_mode= True
+        from_attributes = True
 
 class PostOutVote(BaseModel):
      Post: PostResponse

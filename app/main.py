@@ -6,7 +6,7 @@ from .config import setting
 from fastapi.middleware.cors import CORSMiddleware
 
 # when using alembic we dont need below code - 
-model.Base.metadata.create_all(bind = engine)
+# model.Base.metadata.create_all(bind = engine)
 
 app = FastAPI()
 
@@ -28,4 +28,4 @@ app.include_router(auth.router)
 
 @app.get("/")
 def root():
-    return {"message" :"Hello World go go "}
+    return {"message" :" HELLO USER!!! "}

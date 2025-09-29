@@ -71,7 +71,6 @@ def run_migrations_online() -> None:
 
     print("🔗 Using DB URL:", connectable.url)
 
-
     with connectable.connect() as connection:
         context.configure(
             connection=connection, target_metadata=target_metadata

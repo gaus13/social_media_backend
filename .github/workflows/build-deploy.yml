@@ -53,10 +53,25 @@ jobs:
       - name: Install test dependencies
         run: pip install pytest httpx
         
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+        
+      - name: Wait for PostgreSQL to be ready
+        run: |
+          echo "⏳ Waiting for PostgreSQL to be ready..."
+          until pg_isready -h localhost -p 5432; do
+            echo "Waiting for PostgreSQL..."
+            sleep 2
+          done
+          echo "✅ PostgreSQL is ready!"
+        
       - name: Test with pytest
         run: |
           echo "🧪 Running tests with pytest..."
-          pytest tests/ -v --tb=short
+          echo "🔍 Environment check:"
+          echo "DATABASE_HOSTNAME: $DATABASE_HOSTNAME"
+          echo "DATABASE_NAME: $DATABASE_NAME"
+          pytest tests/ -v --tb=short -x
           
       - name: Check if requirements.txt exists
         run: |

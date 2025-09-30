@@ -3,11 +3,22 @@ name: Simple Setup Check
 on: [push, pull_request]
 
 jobs:
-  setup-check:
+  build-and-test:
     runs-on: ubuntu-latest
+    environment:
+      name: testing
+    env: 
+      DATABASE_HOSTNAME: ${{ secrets.DATABASE_HOSTNAME }}
+      DATABASE_PORT: ${{ secrets.DATABASE_PORT }}
+      DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
+      DATABASE_NAME: ${{ secrets.DATABASE_NAME }}
+      DATABASE_USERNAME: ${{ secrets.DATABASE_USERNAME }}
+      SECRET_KEY: ${{ secrets.SECRET_KEY }}
+      ALGORITHM: ${{ secrets.ALGORITHM }}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${{ secrets.ACCESS_TOKEN_EXPIRE_MINUTES }}
           
     steps: 
-      - name: pulling git repo
+      - name: Pulling git repo
         uses: actions/checkout@v4
         
       - name: Install python version 3.12
@@ -17,10 +28,19 @@ jobs:
           
       - name: Say hello to Danish
         run: echo "Hello Danish! Your GitHub Actions workflow is working perfectly! 🎉"
+
+      - name: Update pip
+        run: python -m pip install --upgrade pip
         
-      - name: Show Python version
-        run: python --version
+      - name: Install all dependencies
+        run: pip install -r requirements.txt
         
+      - name: Install test dependencies
+        run: pip install pytest
+        
+      - name: Test with pytest
+        run: pytest
+          
       - name: Check if requirements.txt exists
         run: |
           if [ -f requirements.txt ]; then
@@ -34,4 +54,4 @@ jobs:
       - name: Show project structure
         run: |
           echo "📁 Project structure:"
-          ls -la  
+          ls -la
